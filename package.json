@@ -1,0 +1,14 @@
+{
+  "name": "rabiitmq-testing",
+  "version": "1.0.0",
+  "description": "",
+  "main": "emit_log.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^0.4.2"
+  }
+}
