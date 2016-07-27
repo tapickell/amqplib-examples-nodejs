@@ -11,7 +11,7 @@ amqp.connect('amqp://localhost').then(function(conn) {
         return ch.assertQueue(queueName, {exclusive: false});
       })
       .then(function(qok) {
-        console.log("QOK: " + JSON.stringify(qok));
+        console.log("Gathering History");
         return getAllMessages(qok.queue, []);
       })
       .then(function(messages) {
@@ -24,18 +24,34 @@ amqp.connect('amqp://localhost').then(function(conn) {
         }
       })
       .then(function() {
-        console.log(' [C] Closing Connection');
+        var queueName = process.argv.slice(2).join(' ');
+        return ch.assertQueue(queueName, {exclusive: false});
+      })
+      .then(function(qok) {
+        return ch.bindQueue(qok.queue, 'logs', '').then(function() {
+          return qok.queue;
+        });
+      })
+      .then(function(queue) {
+        return ch.consume(queue, logMessage, {noAck: false});
+      })
+      .then(function() {
+        console.log(' [*] Waiting for logs. To exit press CTRL+C');
       });
+
+    function logMessage(msg) {
+      console.log(" " + msg.fields.deliveryTag + " [x] " + msg.content.toString());
+      ch.ack(msg);
+    }
 
       function getAllMessages(queueName, acc) {
         return ch.get(queueName, {noAck: false})
           .then(function(msg) {
-            console.log("ch.get called in recursion " + JSON.stringify(msg));
             if (msg) {
               acc.push(msg);
               return getAllMessages(queueName, acc);
             } else {
-              console.log("Done now returning accumulator");
+              console.log(" [H] Done gathering History");
               return acc;
             }
           });
