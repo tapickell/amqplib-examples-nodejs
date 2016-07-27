@@ -11,20 +11,19 @@ amqp.connect('amqp://localhost').then(function(conn) {
         return ch.assertQueue(queueName, {exclusive: false});
       })
       .then(function(qok) {
-        return ch.bindQueue(qok.queue, 'logs', '').then(function() {
-          return qok.queue;
-        });
+        return ch.get(qok.queue, {noAck: false});
       })
-      .then(function(queue) {
-        return ch.consume(queue, logMessage, {noAck: false});
+      .then(function(msg) {
+        if (msg) {
+          console.log(" " + msg.fields.deliveryTag + " [x] " + msg.content.toString());
+          ch.ack(msg);
+          console.log(" Msg: " + msg.fields.deliveryTag + " Ack'd ");
+        } else {
+          console.log("logMessage: " + "No Messages At This Time.");
+        }
       })
       .then(function() {
-        console.log(' [*] Waiting for logs. To exit press CTRL+C');
+        console.log(' [C] Closing Connection');
       });
-
-    function logMessage(msg) {
-      console.log(" " + msg.fields.deliveryTag + " [x] " + msg.content.toString());
-      ch.ack(msg);
-    }
   });
 }).then(null, console.warn);

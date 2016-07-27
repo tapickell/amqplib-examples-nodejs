@@ -7,7 +7,7 @@ amqp.connect('amqp://localhost').then(function(conn) {
   return conn.createChannel().then(function(ch) {
     return ch.assertExchange('logs', 'fanout', {durable: true})
       .then(function() {
-        var queueName = process.argv.slice(2).join(' ');
+        var queueName = 'history';
         return ch.assertQueue(queueName, {exclusive: false});
       })
       .then(function(qok) {
@@ -24,7 +24,6 @@ amqp.connect('amqp://localhost').then(function(conn) {
 
     function logMessage(msg) {
       console.log(" " + msg.fields.deliveryTag + " [x] " + msg.content.toString());
-      ch.ack(msg);
     }
   });
 }).then(null, console.warn);
